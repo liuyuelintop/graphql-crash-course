@@ -2,6 +2,7 @@ import express from "express";
 import http from "http";
 import cors from "cors";
 import dotenv from "dotenv";
+import path from "path";
 import passport from "passport";
 import session from "express-session";
 import connectMongo from "connect-mongodb-session";
@@ -15,10 +16,17 @@ import { buildContext } from "graphql-passport";
 import mergedResolvers from "./resolvers/index.js";
 import mergedTypeDefs from "./typeDefs/index.js";
 
-import { connectDB } from "./db/connetDB.js";
+import { connectDB } from "./db/connectDB.js";
 import { configurePassport } from "./passport/passport.config.js";
+
+import job from "./cron.js";
+
 dotenv.config();
 configurePassport();
+
+job.start();
+
+const __dirname = path.resolve();
 
 // Required logic for integrating with Express
 const app = express();
@@ -77,6 +85,13 @@ app.use(
     context: async ({ req, res }) => buildContext({ req, res }),
   })
 );
+
+// npm run build will build your frontend app, and it will the optimized version of your app
+app.use(express.static(path.join(__dirname, "frontend/dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend/dist", "index.html"));
+});
 
 // Modified server startup
 await new Promise((resolve) => httpServer.listen({ port: 4000 }, resolve));
