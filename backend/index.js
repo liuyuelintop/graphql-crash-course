@@ -7,7 +7,6 @@ import session from "express-session";
 import connectMongo from "connect-mongodb-session";
 
 import { ApolloServer } from "@apollo/server";
-import { startStandaloneServer } from "@apollo/server/standalone";
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 
@@ -66,7 +65,7 @@ await server.start();
 // Set up our Express middleware to handle CORS, body parsing,
 // and our expressMiddleware function.
 app.use(
-  "/",
+  "/graphql",
   cors({
     origin: "http://localhost:3000",
     credentials: true, // this option allows the client to send cookies across HTTP requests
@@ -75,7 +74,7 @@ app.use(
   // expressMiddleware accepts the same arguments:
   // an Apollo Server instance and optional configuration options
   expressMiddleware(server, {
-    context: async ({ req, res }) => buildContext({ req, res, user }),
+    context: async ({ req, res }) => buildContext({ req, res }),
   })
 );
 
@@ -83,4 +82,4 @@ app.use(
 await new Promise((resolve) => httpServer.listen({ port: 4000 }, resolve));
 await connectDB();
 
-console.log(`🚀 Server ready at http://localhost:4000/`);
+console.log(`🚀 Server ready at http://localhost:4000/graphql`);
